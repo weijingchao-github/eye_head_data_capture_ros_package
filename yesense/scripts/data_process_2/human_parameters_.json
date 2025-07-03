@@ -1,0 +1,12 @@
+{
+    "head_color_camera_to_base": {
+        "x": 40mm,
+        "y": 0,
+        "z": 350mm
+    },
+    "eye_to_base": {
+        "x": 90mm,
+        "y": 40mm,
+        "z": 130mm
+    }
+}

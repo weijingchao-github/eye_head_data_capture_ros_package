@@ -1,0 +1,37 @@
+<launch>
+
+  <include file="$(find realsense2_camera)/launch/rs_camera.launch">
+    <arg name="serial_no" value="324422300758" />
+    <arg name="camera" value="camera_head" />
+    <arg name="color_width" value="640" />
+    <arg name="color_height" value="480" />
+    <arg name="color_fps" value="60" />
+    <arg name="depth_width" value="640" />
+    <arg name="depth_height" value="480" />
+    <arg name="depth_fps" value="60" />
+    <arg name="enable_sync" value="true" />
+    <arg name="align_depth" value="true" />
+    <arg name="enable_gyro" value="true" />
+    <arg name="enable_accel" value="true" />
+    <arg name="unite_imu_method" value="linear_interpolation" />
+  </include>
+
+  <include file="$(find realsense2_camera)/launch/rs_camera.launch">
+    <arg name="serial_no" value="234222300256" />
+    <arg name="camera" value="camera_face" />
+    <arg name="color_width" value="640" />
+    <arg name="color_height" value="480" />
+    <arg name="color_fps" value="60" />
+    <arg name="depth_width" value="640" />
+    <arg name="depth_height" value="480" />
+    <arg name="depth_fps" value="60" />
+    <arg name="enable_sync" value="true" />
+    <arg name="align_depth" value="true" />
+  </include>
+
+  <include file="$(find imu_complementary_filter)/launch/complementary_filter.launch" />
+  <!-- <include file="$(find imu_filter_madgwick)/launch/imu_filter_madgwick.launch" /> -->
+
+  <node pkg="yesense_imu" type="data_capture_2.py" name="data_capture" output="screen" />
+
+</launch>

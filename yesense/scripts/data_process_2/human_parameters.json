@@ -1,0 +1,21 @@
+{
+    "head_color_camera_to_base": {
+        "x": 0.04,
+        "y": 0,
+        "z": 0.35
+    },
+    "eye_to_base": {
+        "x": 0.09,
+        "y": 0,
+        "z": 0.13
+    },
+    "initial_head_pose_quaternion": {
+        "x": -1,
+        "y": -1,
+        "z": -1,
+        "w": -1
+    },
+    "eye_yaw_scale_640_480": -1,
+    "eye_pitch_scale_640_480": -1,
+    "eye_ball_radius": 0.017
+}
