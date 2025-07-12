@@ -1,0 +1,14 @@
+# 数据处理记录
+
+## Saccade
+
+### 眼颈终止姿态推理
+
+1. **开始一次Saccade**
+   获取初始眼颈姿态时间戳的方式：target物体被移走后，眼颈开始连续动的那一帧，体现在eye_camera**或者**head_camera图像开始连续变化。
+2. **一次Saccade结束**
+   获取终止眼颈姿态时间戳的方式：head_camera中有target物体，眼颈图像从运动变成基本保持不动，体现在eye_camera**和**head_camera中的图像不发生变化。
+
+### 眼颈动作序列生成
+
+## Smooth Pursuit

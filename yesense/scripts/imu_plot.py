@@ -61,7 +61,7 @@ class IMUPlotter:
             msg.orientation.z,
             msg.orientation.w,
         )
-        print(quaternion)
+        # print(quaternion)
         roll, pitch, yaw = euler_from_quaternion(quaternion, axes="rxyz")
 
         # 转换为角度

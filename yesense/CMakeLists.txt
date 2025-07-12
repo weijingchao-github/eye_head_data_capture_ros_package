@@ -113,6 +113,7 @@ catkin_install_python(PROGRAMS
   scripts/imu_plot.py
   scripts/data_capture.py
   scripts/data_capture_2.py
+  scripts/data_capture_3.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

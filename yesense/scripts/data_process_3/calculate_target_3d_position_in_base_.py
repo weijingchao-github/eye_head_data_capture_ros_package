@@ -1,33 +1,22 @@
-import json
-import os
-
 import numpy as np
 from spatialmath import SE3, UnitQuaternion
 
 
-def main():
-    target_position_in_head_camera_frame = (0.075, 0.282, 2.182)
-    current_head_camera_pose_quaternion_raw = (
-        0.04509014325937586,
-        -0.001837119286493963,
-        -0.1553463458623336,
-        0.9868287677205183,
-    )  # x, y, z, w格式的头部姿态IMU四元数，在NWU坐标系下
+def calculate_target_position_in_base_frame(
+    target_position_in_head_camera_frame,
+    initial_head_camera_pose_quaternion_xyzw,
+    current_head_camera_pose_quaternion_xyzw,
+    human_parameters,
+):
     current_head_camera_pose_quaternion_wxyz = (
-        current_head_camera_pose_quaternion_raw[-1],
-        current_head_camera_pose_quaternion_raw[0],
-        current_head_camera_pose_quaternion_raw[1],
-        current_head_camera_pose_quaternion_raw[2],
+        current_head_camera_pose_quaternion_xyzw[-1],
+        current_head_camera_pose_quaternion_xyzw[0],
+        current_head_camera_pose_quaternion_xyzw[1],
+        current_head_camera_pose_quaternion_xyzw[2],
     )
     current_head_camera_pose_quaternion = UnitQuaternion(
         current_head_camera_pose_quaternion_wxyz
     )
-    with open(
-        os.path.join(os.path.dirname(__file__), "human_parameters.json"),
-        "r",
-        encoding="utf-8",
-    ) as f:
-        human_parameters = json.load(f)
     # 彩色摄像头与base坐标系在NWU坐标系描述下的固定位置偏差(x, y, z)
     head_camera_position_to_base_in_nwu = [
         human_parameters["head_camera_position_to_base"]["x"],
@@ -40,10 +29,10 @@ def main():
         -head_camera_position_to_base_in_nwu[2],
     ]
     initial_head_camera_pose_quaternion_wxyz = [
-        human_parameters["initial_head_camera_pose_quaternion"]["w"],
-        human_parameters["initial_head_camera_pose_quaternion"]["x"],
-        human_parameters["initial_head_camera_pose_quaternion"]["y"],
-        human_parameters["initial_head_camera_pose_quaternion"]["z"],
+        initial_head_camera_pose_quaternion_xyzw[-1],
+        initial_head_camera_pose_quaternion_xyzw[0],
+        initial_head_camera_pose_quaternion_xyzw[1],
+        initial_head_camera_pose_quaternion_xyzw[2],
     ]
     initial_head_camera_pose_quaternion = UnitQuaternion(
         initial_head_camera_pose_quaternion_wxyz
@@ -60,9 +49,5 @@ def main():
     target_position_in_base_frame = (
         tf_base_frame_to_current_head_camera_pose_frame
         * np.array(target_position_in_head_camera_frame)
-    )
-    print(target_position_in_base_frame)
-
-
-if __name__ == "__main__":
-    main()
+    ).reshape(-1)
+    return target_position_in_base_frame

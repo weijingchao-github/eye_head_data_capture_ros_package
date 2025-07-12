@@ -2,7 +2,7 @@ import cv2
 
 
 def main():
-    image_path = ""
+    image_path = "aligned_image.jpg"
     image = cv2.imread(image_path)
     cv2.imshow("image", image)
     cv2.waitKey(0)

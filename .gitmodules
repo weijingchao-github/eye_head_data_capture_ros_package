@@ -1,3 +1,6 @@
 [submodule "imu_tools"]
 	path = imu_tools
 	url = https://github.com/weijingchao-github/imu_tools.git
+[submodule "yesense/scripts/data_process_4/L2CSNet/deepface"]
+	path = yesense/scripts/data_process_4/L2CSNet/deepface
+	url = https://github.com/weijingchao-github/deepface.git

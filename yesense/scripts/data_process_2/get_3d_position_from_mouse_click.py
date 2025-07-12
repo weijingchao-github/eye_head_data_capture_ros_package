@@ -9,8 +9,8 @@ from sensor_msgs.msg import CameraInfo
 
 class DataLoader:
     def __init__(self):
-        data_dir = "/home/zxr/Documents/wjc/HRI/project/eye_head_data_capture/src/yesense/scripts/captured_data_2/20250624_154143"
-        timestamp = "1750750962.6439364"
+        data_dir = "/home/wjc/Storage/humanoid_head/eye_head_data_capture/src/yesense/scripts/captured_data_3/20250707_104920"
+        timestamp = "1751856573.3819400"
         color_image_path = os.path.join(data_dir, f"head_color_image/{timestamp}.jpg")
         depth_image_path = os.path.join(data_dir, f"head_depth_image/{timestamp}.png")
         camera_info_path = os.path.join(data_dir, "color_camera_info.pkl")

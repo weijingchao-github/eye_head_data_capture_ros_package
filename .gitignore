@@ -1,2 +1,5 @@
 captured_data*
 *.task
+__pycache__
+L2CSNet_gaze360.pkl
+.mypy_cache

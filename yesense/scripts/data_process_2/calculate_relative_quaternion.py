@@ -22,7 +22,14 @@ def quaternion_multiply(q1, q2):
 
 
 def main():
-    quaternion_current = np.array([-1, -1, -1, -1])  # w, x, y, z
+    quaternion_current = np.array(
+        [
+            0.9868287677205183,
+            0.04509014325937586,
+            -0.001837119286493963,
+            -0.1553463458623336,
+        ]
+    )  # w, x, y, z
     with open(
         os.path.join(os.path.dirname(__file__), "human_parameters.json"),
         "r",
@@ -30,14 +37,15 @@ def main():
     ) as f:
         human_parameters = json.load(f)
     quaternion_initial = [
-        human_parameters["initial_head_pose_quaternion"]["w"],
-        human_parameters["initial_head_pose_quaternion"]["x"],
-        human_parameters["initial_head_pose_quaternion"]["y"],
-        human_parameters["initial_head_pose_quaternion"]["z"],
+        human_parameters["initial_head_camera_pose_quaternion"]["w"],
+        human_parameters["initial_head_camera_pose_quaternion"]["x"],
+        human_parameters["initial_head_camera_pose_quaternion"]["y"],
+        human_parameters["initial_head_camera_pose_quaternion"]["z"],
     ]
     delta_q = quaternion_multiply(
         quaternion_conjugate(quaternion_initial), quaternion_current
     )
+    print(delta_q)
 
 
 if __name__ == "__main__":
