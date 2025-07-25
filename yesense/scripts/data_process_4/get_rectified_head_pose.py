@@ -18,6 +18,7 @@ def get_current_rectified_head_pose(
     rectified_current_head_pose_so3 = (
         SO3.Rz(rectified_yaw) * SO3.Ry(pitch) * SO3.Rx(roll)
     )
+    # 这个返回的是单位四元数吗(经过测试是的)
     rectified_current_head_pose_quaternion_wxyz = t3d.quaternions.mat2quat(
         rectified_current_head_pose_so3.A
     )

@@ -25,7 +25,7 @@ def calculate_gaze_ray_intersection(
         current_head_camera_pose_quaternion_xyzw[2],
     )
     head_pose_quaternion = UnitQuaternion(head_pose_quaternion_wxyz)
-    eye_gaze_yaw_angle, eye_gaze_pitch_angle = eye_gaze_direction
+    eye_gaze_yaw_radians, eye_gaze_pitch_radians = eye_gaze_direction
     x_plain_to_base_origin = target_position_in_base_frame[0]
     eye_origin_position_in_base_frame = [
         human_parameters["eye_to_base"]["x"],
@@ -37,9 +37,7 @@ def calculate_gaze_ray_intersection(
         eye_origin_position_in_base_frame
     )
     # 在眼球坐标系中构建视线方向向量
-    tf_gaze_ray_pose = SE3.Rz(math.radians(eye_gaze_yaw_angle)) * SE3.Ry(
-        math.radians(eye_gaze_pitch_angle)
-    )
+    tf_gaze_ray_pose = SE3.Rz(eye_gaze_yaw_radians) * SE3.Ry(eye_gaze_pitch_radians)
     gaze_ray_in_eye_frame = np.array([1, 0, 0])  # 初始方向
     gaze_ray_in_eye_frame = (tf_gaze_ray_pose * gaze_ray_in_eye_frame).reshape(-1)
     # 将视线方向转换到base坐标系

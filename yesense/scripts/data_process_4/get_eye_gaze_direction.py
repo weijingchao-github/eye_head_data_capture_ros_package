@@ -7,6 +7,7 @@ sys.path.insert(0, path)
 import math
 
 import cv2
+import mediapipe as mp
 import numpy as np
 from L2CSNet import gaze_direction_estimate_one_image
 from mediapipe.python._framework_bindings import image as mp_image
@@ -19,8 +20,8 @@ from PIL import Image
 class GetEyeGazeDirection:
     def __init__(self, human_parameters):
         self.pitch_offset = human_parameters["face_camera_pitch_angle_offet"]
-        self.gaze_estimation_model = gaze_direction_estimate_one_image.GazeEstimation()
         self.facial_landmarks_detector = self._facial_landmarks_detector_init()
+        self.gaze_estimation_model = gaze_direction_estimate_one_image.GazeEstimation()
         # Detect blink setup
         self.might_blink_count = 0
         self.eye_ar_thresh = 0.3
@@ -31,17 +32,23 @@ class GetEyeGazeDirection:
         # 人脸对齐
         aligned_image = self._align_face(image_raw)
         # 视线方向计算
-        eye_gaze_yaw_angle, eye_gaze_pitch_angle = (
+        eye_gaze_yaw_radians, eye_gaze_pitch_radians = (
             self.gaze_estimation_model.do_gaze_direction_estimate(aligned_image)
         )
-        eye_gaze_yaw_angle = -eye_gaze_yaw_angle
-        eye_gaze_pitch_angle = -(eye_gaze_pitch_angle - self.pitch_offset)
-        return eye_gaze_yaw_angle, eye_gaze_pitch_angle
+        eye_gaze_yaw_radians = -eye_gaze_yaw_radians
+        eye_gaze_pitch_radians = math.radians(
+            -(math.degrees(eye_gaze_pitch_radians) - self.pitch_offset)
+        )
+        return eye_gaze_yaw_radians, eye_gaze_pitch_radians
 
     def _facial_landmarks_detector_init(self):
         # 3FabRec Model can only detect one face in an image, namely only one face can appear in an image.
         base_options = mp_python.BaseOptions(
-            model_asset_path="./google_mediapipe/face_landmarker_v2_with_blendshapes.task"
+            model_asset_path=os.path.join(
+                os.path.dirname(__file__),
+                "google_mediapipe/face_landmarker_v2_with_blendshapes.task",
+            ),
+            delegate=mp.tasks.BaseOptions.Delegate.GPU,
         )
         options = mp_vision.FaceLandmarkerOptions(base_options=base_options)
         facial_landmarks_detector = mp_vision.FaceLandmarker.create_from_options(
