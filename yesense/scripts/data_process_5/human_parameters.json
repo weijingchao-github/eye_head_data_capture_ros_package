@@ -1,0 +1,16 @@
+{
+    "head_camera_position_to_base": {
+        "x": 0.05,
+        "y": 0,
+        "z": 0.30
+    },
+    "eye_to_base": {
+        "x": 0.09,
+        "y": 0,
+        "z": 0.13
+    },
+    "face_camera_pitch_angle_offet": 3,
+    "eye_yaw_scale_640_480": 0.000441176,
+    "eye_pitch_scale_640_480": 0.000357143,
+    "eye_ball_radius": 0.017
+}
