@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import zhplot
-from eye_gaze_direction_kalman_filter import eye_gaze_direction_kalman_filter
+from eye_gaze_direction_filter import butterworth_lowpass_filter
 from get_eye_gaze_direction import GetEyeGazeDirection
 from get_rectified_head_pose import get_current_rectified_head_pose
 from matplotlib.widgets import Slider
@@ -32,7 +32,8 @@ class HeadPoseDataProcess:
         rectified_and_interpolated_data = self.rectify_and_interpolate_raw_data()
         if viz_flag:
             self.show_quaternion_format_curve(rectified_and_interpolated_data)
-            self.show_euler_angles_format_curve(rectified_and_interpolated_data)
+            # self.show_euler_angles_format_curve(rectified_and_interpolated_data)
+        self.head_pose_processed_data = rectified_and_interpolated_data
 
     def rectify_and_interpolate_raw_data(self):
         imu_data_df = pd.read_csv(
@@ -347,21 +348,22 @@ class EyeGazeDirectionDataProcess:
         self.data_folder_path = data_folder_path
         self.get_eye_gaze_direction_model = GetEyeGazeDirection(human_parameters)
         eye_gaze_direction_raw_data = self.get_eye_gaze_direction_raw_data()
-        with open(
-            os.path.join(
-                os.path.dirname(__file__), "eye_gaze_direction_raw_data.pickle"
-            ),
-            "wb",
-        ) as f:
-            pickle.dump(eye_gaze_direction_raw_data, f)
-        eye_gaze_direction_kalman_filtered_data = eye_gaze_direction_kalman_filter(
+        # with open(
+        #     os.path.join(
+        #         os.path.dirname(__file__), "eye_gaze_direction_raw_data.pickle"
+        #     ),
+        #     "wb",
+        # ) as f:
+        #     pickle.dump(eye_gaze_direction_raw_data, f)
+        eye_gaze_direction_filtered_data = butterworth_lowpass_filter(
             eye_gaze_direction_raw_data
         )
         if viz_flag:
-            # self.show_euler_angles_format_curve(eye_gaze_direction_raw_data)
+            self.show_euler_angles_format_curve(eye_gaze_direction_raw_data)
             self.show_compared_euler_angles_format_curve(
-                eye_gaze_direction_raw_data, eye_gaze_direction_kalman_filtered_data
+                eye_gaze_direction_raw_data, eye_gaze_direction_filtered_data
             )
+        self.eye_gaze_direction_processed_data = eye_gaze_direction_filtered_data
 
     def get_eye_gaze_direction_raw_data(self):
         imu_data_df = pd.read_csv(
@@ -407,6 +409,7 @@ class EyeGazeDirectionDataProcess:
                     self.data_folder_path, f"face_image/{current_timestamp}.jpg"
                 )
             )
+            face_image = cv2.flip(face_image, 1)
             eye_gaze_yaw_radians, eye_gaze_pitch_radians = (
                 self.get_eye_gaze_direction_model.pipeline(face_image)
             )
@@ -693,6 +696,37 @@ class EyeGazeDirectionDataProcess:
         plt.show()
 
 
+def save_csv_file(data_folder_path, head_pose_data_list, eye_gaze_direction_data_list):
+    eye_head_pose_sequence = []
+    for head_pose_data, eye_gaze_direction_data in zip(
+        head_pose_data_list, eye_gaze_direction_data_list
+    ):
+        eye_head_pose_sequence.append({**head_pose_data, **eye_gaze_direction_data})
+    csv_filename = os.path.join(data_folder_path, "eye_head_pose_sequence_60hz.csv")
+    df = pd.DataFrame(eye_head_pose_sequence)
+    df.to_csv(csv_filename, index=False)
+
+
+def smooth_eye_and_head_pose_raw_data(
+    data_folder_path, cnt_abort, human_parameters_path
+):
+    with open(human_parameters_path, "r", encoding="utf-8") as f:
+        human_parameters = json.load(f)
+    # head pose data process
+    head_pose_processor = HeadPoseDataProcess(data_folder_path, cnt_abort)
+    # eye gaze direction data process
+    eye_gaze_direction_processor = EyeGazeDirectionDataProcess(
+        data_folder_path, human_parameters, cnt_abort
+    )
+    # save csv file
+    save_csv_file(
+        data_folder_path,
+        head_pose_processor.head_pose_processed_data,
+        eye_gaze_direction_processor.eye_gaze_direction_processed_data,
+    )
+    print("Stage1: Smooth Eye and Head Pose Raw Data Finished.")
+
+
 def main():
     data_folder_path = "/home/wjc/Storage/humanoid_head/eye_head_data_capture/src/yesense/scripts/captured_data_3/20250707_105422"
     cnt_abort = 15  # 这个根据每个data_folder的情况赋值，一个是时间戳数据从哪一帧开始连续平稳，另一个是期望刚开始的时候眼颈姿态平稳，没有处在变化中，不然卡尔曼滤波对眼球转动角速度的初值估计有误，影响滤波效果
@@ -702,9 +736,19 @@ def main():
     with open(human_parameters_path, "r", encoding="utf-8") as f:
         human_parameters = json.load(f)
     # head pose data process
-    # HeadPoseDataProcess(data_folder_path, cnt_abort)
+    head_pose_processor = HeadPoseDataProcess(data_folder_path, cnt_abort)
     # eye gaze direction data process
-    EyeGazeDirectionDataProcess(data_folder_path, human_parameters, cnt_abort)
+    eye_gaze_direction_processor = EyeGazeDirectionDataProcess(
+        data_folder_path, human_parameters, cnt_abort
+    )
+    # save csv file
+    save_csv_file(
+        data_folder_path,
+        head_pose_processor.head_pose_processed_data,
+        eye_gaze_direction_processor.eye_gaze_direction_processed_data,
+    )
+
+    print("Finished!")
 
 
 if __name__ == "__main__":

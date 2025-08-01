@@ -63,7 +63,23 @@ class GazeEstimation:
         image_height, image_width, _ = image_color.shape
         faces_detect_result_xywh = self._detect_face(image_color)
         if len(faces_detect_result_xywh) != 1:
-            raise Exception("Detect not one face!")
+            true_face_index = -1
+            min_distance = 10000
+            for index, face_detect_result_xywh in enumerate(faces_detect_result_xywh):
+                # 检测到人脸图像的像素宽高应该都在250以上
+                if face_detect_result_xywh[2] < 250 or face_detect_result_xywh[3] < 250:
+                    continue
+                # 检测到人脸图像的中心应接近图像中心
+                distance = (face_detect_result_xywh[0] - image_width / 2) ** 2 + (
+                    face_detect_result_xywh[1] - image_height / 2
+                ) ** 2
+                if distance < min_distance:
+                    true_face_index = index
+                    min_distance = distance
+            if true_face_index != -1:
+                faces_detect_result_xywh = [faces_detect_result_xywh[true_face_index]]
+            else:
+                raise Exception("Face Not Detected!")
         face_images_resized = []
         bboxes_xyxy = []
         face_detect_result_xywh = faces_detect_result_xywh[0]
@@ -79,7 +95,7 @@ class GazeEstimation:
         face_image_resized = cv2.resize(face_image, (224, 224))
         face_images_resized.append(face_image_resized)
         bboxes_xyxy.append(bbox_xyxy)
-        pitch_pred_array, yaw_pred_array = self._predict_gaze(
+        yaw_pred_array, pitch_pred_array = self._predict_gaze(
             np.stack(face_images_resized)
         )
         if self.enable_visualization:
@@ -118,10 +134,14 @@ class GazeEstimation:
 
         yaw_angle = yaw_pred_array[0]
         pitch_angle = pitch_pred_array[0]
+        # print(yaw_angle)
+        # print(pitch_angle)
         return yaw_angle, pitch_angle
 
     def _detect_face(self, image_detect):
-        faces_detect_result = self.face_detector_model.detect_faces(image_detect)
+        faces_detect_result = self.face_detector_model.detect_faces(
+            image_detect, conf=0.7
+        )
         faces_detect_result_xywh = []
         for face_detect_result in faces_detect_result:
             faces_detect_result_xywh.append(face_detect_result["xywh"])
@@ -137,7 +157,7 @@ class GazeEstimation:
             raise RuntimeError("Invalid dtype for input")
 
         # Predict
-        gaze_pitch, gaze_yaw = self.gaze_direction_estimation_model(img)
+        gaze_yaw, gaze_pitch = self.gaze_direction_estimation_model(img)
         pitch_predicted = self.softmax(gaze_pitch)
         yaw_predicted = self.softmax(gaze_yaw)
 
@@ -151,11 +171,11 @@ class GazeEstimation:
         pitch_predicted = pitch_predicted.cpu().detach().numpy() * np.pi / 180.0
         yaw_predicted = yaw_predicted.cpu().detach().numpy() * np.pi / 180.0
 
-        return pitch_predicted, yaw_predicted
+        return yaw_predicted, pitch_predicted
 
 
 def main():
-    image = cv2.imread("1751856870.0271964.jpg")
+    image = cv2.imread("1751856874.8652933.jpg")
     gaze_estimation_network = GazeEstimation()
     gaze_estimation_network.do_gaze_direction_estimate(image)
 

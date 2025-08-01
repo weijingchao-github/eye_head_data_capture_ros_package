@@ -174,7 +174,9 @@ class DataCollector:
             timestamp = image_data["timestamp"]
             image = image_data["image"]
             image = self.bridge.imgmsg_to_cv2(image, "bgr8")
-            image = cv2.flip(image, 0)
+            image = cv2.flip(
+                image, 0
+            )  # 图片上下是对的，但左右是反的，不过不用改，后处理流程中解决了这个问题
             cv2.imwrite(
                 os.path.join(self.save_dir, "face_image") + f"/{timestamp}.jpg", image
             )
