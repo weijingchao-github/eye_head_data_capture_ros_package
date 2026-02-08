@@ -25,10 +25,11 @@ from tqdm import tqdm
 
 
 class HeadPoseDataProcess:
-    def __init__(self, data_folder_path, cnt_abort):
+    def __init__(self, data_folder_path, cnt_abort, initial_head_pose_quaternion):
         viz_flag = True
         self.cnt_abort = cnt_abort
         self.data_folder_path = data_folder_path
+        self.initial_head_pose_quaternion = initial_head_pose_quaternion
         rectified_and_interpolated_data = self.rectify_and_interpolate_raw_data()
         if viz_flag:
             self.show_quaternion_format_curve(rectified_and_interpolated_data)
@@ -48,13 +49,13 @@ class HeadPoseDataProcess:
         # 两帧差在 2.5 * 1/60 以上意味着跳了两帧以上，这时认为数据有问题，抛出错误
         time_threshold_1 = 1.5 * 1 / 60
         time_threshold_2 = 2.5 * 1 / 60
-        initial_head_pose_quaternion = None
+        initial_head_pose_quaternion = self.initial_head_pose_quaternion
         last_row_data = None
         cnt = 0
         rectified_and_interpolated_data = []
         for row in imu_data_df.itertuples():
-            if cnt == 0:
-                initial_head_pose_quaternion = (row.x, row.y, row.z, row.w)
+            # if cnt == 0:
+            #     initial_head_pose_quaternion = (row.x, row.y, row.z, row.w)
             if cnt < cnt_abort:
                 cnt += 1
                 continue
@@ -429,7 +430,7 @@ class EyeGazeDirectionDataProcess:
                     <= time_threshold_2
                 ):
                     last_eye_gaze_direction = np.array(
-                        last_row_data["yaw"], last_row_data["pitch"]
+                        [last_row_data["yaw"], last_row_data["pitch"]]
                     )
                     decimal_length = 7
                     interpolated_eye_gaze_timestamp = str(
@@ -455,6 +456,8 @@ class EyeGazeDirectionDataProcess:
                         # 无小数部分时，添加补0后的小数（例如补6位则为"000000"）
                         padded_decimal = "0" * decimal_length
                     interpolated_eye_gaze_timestamp = f"{integer_part}.{padded_decimal}"
+                    if interpolated_eye_gaze_timestamp == "1751856874.6979864":
+                        a = 1
                     interpolated_eye_gaze_direction = (
                         last_eye_gaze_direction + current_eye_gaze_direction
                     ) / 2
@@ -708,12 +711,14 @@ def save_csv_file(data_folder_path, head_pose_data_list, eye_gaze_direction_data
 
 
 def smooth_eye_and_head_pose_raw_data(
-    data_folder_path, cnt_abort, human_parameters_path
+    data_folder_path, cnt_abort, human_parameters_path, initial_head_pose_quaternion
 ):
     with open(human_parameters_path, "r", encoding="utf-8") as f:
         human_parameters = json.load(f)
     # head pose data process
-    head_pose_processor = HeadPoseDataProcess(data_folder_path, cnt_abort)
+    head_pose_processor = HeadPoseDataProcess(
+        data_folder_path, cnt_abort, initial_head_pose_quaternion
+    )
     # eye gaze direction data process
     eye_gaze_direction_processor = EyeGazeDirectionDataProcess(
         data_folder_path, human_parameters, cnt_abort

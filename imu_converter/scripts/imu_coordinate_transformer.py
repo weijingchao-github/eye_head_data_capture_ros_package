@@ -6,7 +6,7 @@ from sensor_msgs.msg import Imu
 class ImuCoordinateTransformer:
     def __init__(self):
         rospy.Subscriber("/camera_head/imu", Imu, self.do, queue_size=1)
-        self.pub = rospy.Publisher("/camear_head/imu_nwu", Imu, queue_size=1)
+        self.pub = rospy.Publisher("/camera_head/imu_nwu", Imu, queue_size=1)
         # 定义从相机坐标系(RDF)到NWU的旋转矩阵
         self.rotation_matrix = np.array([[0, 0, 1], [-1, 0, 0], [0, -1, 0]])
 

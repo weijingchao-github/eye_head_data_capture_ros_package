@@ -40,10 +40,12 @@ def get_images_and_parameters(folder_name, timestamp, human_parameters_path):
     with open(human_parameters_path, "r", encoding="utf-8") as f:
         human_parameters = json.load(f)
     df = pd.read_csv(
-        os.path.join(folder_name, "eye_head_pose_sequence_30hz.csv")
-    ).set_index("timestamp")
-    if float(timestamp) in df.index:
-        row = df.loc[float(timestamp)]
+        os.path.join(folder_name, "eye_head_pose_sequence_30hz.csv"),
+        dtype={0: str},
+        index_col=0,
+    ).rename(index=str)
+    if timestamp in df.index:
+        row = df.loc[timestamp]
         rectified_current_head_camera_pose_quaternion_xyzw = (
             row["x"],
             row["y"],

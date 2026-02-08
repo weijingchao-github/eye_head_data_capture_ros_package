@@ -97,7 +97,7 @@ def main(data_folder_path):
         combined_img = np.hstack((face_image, head_color_image))
 
         # 放大两倍显示（使用INTER_CUBIC插值方法保持清晰度）
-        scale_factor = 1
+        scale_factor = 0.7
         new_width = int(combined_img.shape[1] * scale_factor)
         new_height = int(combined_img.shape[0] * scale_factor)
         combined_img = cv2.resize(
